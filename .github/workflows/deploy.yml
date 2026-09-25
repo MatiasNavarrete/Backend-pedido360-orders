@@ -1,8 +1,9 @@
-name: Deploy Microservice to AWS EC2
+name: Deploy Orders to AWS EC2
 
 on:
   push:
     branches:
+      - main
       - develop
 
 jobs:
@@ -37,4 +38,15 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/pedidos360-orders:latest
+          tags: matiasnavarreted/ms-pedidos360-orders:latest
+
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/pedidos360
+            docker compose pull orders
+            docker compose up -d --no-deps orders
